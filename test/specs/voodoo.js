@@ -129,13 +129,15 @@ describe('voodoo', () => {
 
         expect(spy.callCount).to.equal(2);
 
-        expect(spy.args[0].length).to.equal(2);
+        expect(spy.args[0].length).to.equal(3);
         expect(spy.args[0][0]).to.equal('foo');
         expect(spy.args[0][1]).to.equal(2);
+        expect(spy.args[0][2]).to.equal(1);
 
-        expect(spy.args[1].length).to.equal(2);
+        expect(spy.args[1].length).to.equal(3);
         expect(spy.args[1][0]).to.equal('bar');
         expect(spy.args[1][1]).to.equal(20);
+        expect(spy.args[1][2]).to.equal(10);
     });
 
     it('should notify observers when deleting a variable', () => {
@@ -235,6 +237,7 @@ describe('voodoo', () => {
         expect(setSpy.callCount).to.equal(1);
         expect(setSpy.args[0][0]).to.equal('foo');
         expect(setSpy.args[0][1]).to.equal(2);
+        expect(setSpy.args[0][2]).to.equal(1);
 
         expect(deleteSpy.callCount).to.equal(1);
         expect(deleteSpy.args[0][0]).to.equal('foo');
@@ -252,6 +255,7 @@ describe('voodoo', () => {
         expect(setSpy.callCount).to.equal(2);
         expect(setSpy.args[1][0]).to.equal('foo');
         expect(setSpy.args[1][1]).to.equal('b');
+        expect(setSpy.args[1][2]).to.equal('a');
 
         expect(deleteSpy.callCount).to.equal(2);
         expect(deleteSpy.args[1][0]).to.equal('foo');
@@ -291,6 +295,7 @@ describe('voodoo', () => {
             expect(setSpy.callCount).to.equal(1);
             expect(setSpy.args[0][0]).to.equal('foo');
             expect(setSpy.args[0][1]).to.equal('baz');
+            expect(setSpy.args[0][2]).to.equal('bar');
 
             expect(deleteSpy.callCount).to.equal(1);
             expect(deleteSpy.args[0][0]).to.equal('foo');

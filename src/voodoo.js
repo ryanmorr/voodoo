@@ -16,10 +16,11 @@ export default function voodoo(source, traps) {
             }
         }
         if (traps.set) {
-            handler.set = (obj, prop, val) => {
-                obj[prop] = val;
-                traps.set(prop, val);
-                return val;
+            handler.set = (obj, prop, nextVal) => {
+                const prevVal = obj[prop];
+                obj[prop] = nextVal;
+                traps.set(prop, nextVal, prevVal);
+                return true;
             }
         }
         if (traps.delete) {
