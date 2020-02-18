@@ -18,8 +18,7 @@ describe('voodoo', () => {
             global._val = this;
         `);
 
-        const data = {};
-        exec(data);
+        const data = exec({});
         expect(global._val).to.equal(data);
     });
 
@@ -65,5 +64,16 @@ describe('voodoo', () => {
         expect(data).to.not.have.property('foo');
         expect(global._val).to.be.an.instanceof(ReferenceError);
         expect(global._val.message).to.equal('foo is not defined');
+    });
+
+    it('should call a variable function', () => {
+        const exec = voodoo(`
+            foo(bar);
+        `);
+        
+        const spy = sinon.spy();
+        exec({foo: spy, bar: 'baz'});
+        expect(spy.callCount).to.equal(1);
+        expect(spy.args[0][0]).to.equal('baz');
     });
 });
