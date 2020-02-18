@@ -82,7 +82,7 @@ describe('voodoo', () => {
         const spy = sinon.spy();
         const exec = voodoo(`
             const a = foo;
-            const b = foo;
+            const b = baz;
             const c = foo;
         `, {
             get(...args) {
@@ -90,7 +90,7 @@ describe('voodoo', () => {
             }
         });
         
-        exec({foo: 'bar'});
+        exec({foo: 'bar', baz: 'qux'});
         expect(spy.callCount).to.equal(3);
 
         expect(spy.args[0].length).to.equal(2);
@@ -98,8 +98,8 @@ describe('voodoo', () => {
         expect(spy.args[0][1]).to.equal('bar');
 
         expect(spy.args[1].length).to.equal(2);
-        expect(spy.args[1][0]).to.equal('foo');
-        expect(spy.args[1][1]).to.equal('bar');
+        expect(spy.args[1][0]).to.equal('baz');
+        expect(spy.args[1][1]).to.equal('qux');
 
         expect(spy.args[2].length).to.equal(2);
         expect(spy.args[2][0]).to.equal('foo');
@@ -110,38 +110,45 @@ describe('voodoo', () => {
         const spy = sinon.spy();
         const exec = voodoo(`
             foo = 2;
-            foo = 3;
+            bar = 20;
         `, {
             set(...args) {
                 spy(...args);
             }
         });
         
-        exec({foo: 1});
+        exec({foo: 1, bar: 10});
         expect(spy.callCount).to.equal(2);
         expect(spy.args[0].length).to.equal(2);
         expect(spy.args[0][0]).to.equal('foo');
         expect(spy.args[0][1]).to.equal(2);
 
         expect(spy.args[1].length).to.equal(2);
-        expect(spy.args[1][0]).to.equal('foo');
-        expect(spy.args[1][1]).to.equal(3);
+        expect(spy.args[1][0]).to.equal('bar');
+        expect(spy.args[1][1]).to.equal(20);
     });
 
     it('should notify observers when deleting a variable', () => {
         const spy = sinon.spy();
         const exec = voodoo(`
             delete foo;
+            delete bar;
         `, {
             delete(...args) {
                 spy(...args);
             }
         });
         
-        exec({foo: 1});
-        expect(spy.callCount).to.equal(1);
-        expect(spy.args[0].length).to.equal(1);
+        exec({foo: 1, bar: 2});
+        expect(spy.callCount).to.equal(2);
+
+        expect(spy.args[0].length).to.equal(2);
         expect(spy.args[0][0]).to.equal('foo');
+        expect(spy.args[0][1]).to.equal(1);
+
+        expect(spy.args[1].length).to.equal(2);
+        expect(spy.args[1][0]).to.equal('bar');
+        expect(spy.args[1][1]).to.equal(2);
     });
 
     it('should notify observers in order when accessing, setting, and deleting a variable', () => {

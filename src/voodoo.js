@@ -17,14 +17,19 @@ export default function voodoo(source, traps) {
         }
         if (traps.set) {
             handler.set = (obj, prop, val) => {
+                obj[prop] = val;
                 traps.set(prop, val);
-                return obj[prop] = val;
+                return val;
             }
         }
         if (traps.delete) {
             handler.deleteProperty = (obj, prop) => {
-                traps.delete(prop);
-                return delete obj[prop];
+                const value = obj[prop];
+                const isDeleted = delete obj[prop];
+                if (isDeleted) {
+                    traps.delete(prop, value);
+                }
+                return isDeleted;
             }
         }
     }
