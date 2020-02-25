@@ -4,7 +4,9 @@ import voodoo from '../../src/voodoo';
 
 describe('voodoo', () => {
     afterEach(() => {
-        delete global._val;
+        if (global._val) {
+            delete global._val;
+        }
     });
 
     it('should return a function', () => {
@@ -380,7 +382,6 @@ describe('voodoo', () => {
             } catch (e) {
                 global._val = e;
             }
-
         `, {
             delete(...args) {
                 spy(...args);
@@ -398,5 +399,36 @@ describe('voodoo', () => {
         expect(spy.callCount).to.equal(0);
         expect(global._val).to.be.an.instanceof(TypeError);
         expect(global._val.message).to.equal('Cannot delete property \'foo\' of #<Object>');
+    });
+
+    it('should respect unscopables', () => {
+        const spy = sinon.spy();
+
+        const exec = voodoo(`
+            try {
+                const a = foo;
+                const b = bar;
+            } catch (e) {
+                global._val = e;
+            }
+        `, {
+            get(...args) {
+                spy(...args);
+            }
+        });
+
+        const obj = {foo: 1, bar: 2};
+        obj[Symbol.unscopables] = {
+            foo: false,
+            bar: true
+        };
+        
+        exec(obj);
+
+        expect(spy.callCount).to.equal(1);
+        expect(spy.args[0][0]).to.equal('foo');
+        expect(spy.args[0][1]).to.equal(1);
+        expect(global._val).to.be.an.instanceof(ReferenceError);
+        expect(global._val.message).to.equal('bar is not defined');
     });
 });
