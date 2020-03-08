@@ -92,13 +92,13 @@ describe('voodoo', () => {
             const a = foo;
             const b = baz;
             const c = foo;
-        `, {
+        `);
+        
+        exec({foo: 'bar', baz: 'qux'}, {
             get(...args) {
                 spy(...args);
             }
         });
-        
-        exec({foo: 'bar', baz: 'qux'});
 
         expect(spy.callCount).to.equal(3);
 
@@ -121,13 +121,13 @@ describe('voodoo', () => {
         const exec = voodoo(`
             foo = 2;
             bar = 20;
-        `, {
+        `);
+        
+        exec({foo: 1, bar: 10}, {
             set(...args) {
                 spy(...args);
             }
         });
-        
-        exec({foo: 1, bar: 10});
 
         expect(spy.callCount).to.equal(2);
 
@@ -148,13 +148,13 @@ describe('voodoo', () => {
         const exec = voodoo(`
             delete foo;
             delete bar;
-        `, {
+        `);
+        
+        exec({foo: 1, bar: 2}, {
             delete(...args) {
                 spy(...args);
             }
         });
-        
-        exec({foo: 1, bar: 2});
 
         expect(spy.callCount).to.equal(2);
 
@@ -178,7 +178,9 @@ describe('voodoo', () => {
             foo = 'qux'
             delete foo;
             foo = 1;
-        `, {
+        `);
+        
+        exec({foo: 'bar'}, {
             get(...args) {
                 getSpy(...args);
             },
@@ -189,8 +191,6 @@ describe('voodoo', () => {
                 deleteSpy(...args);
             }
         });
-        
-        exec({foo: 'bar'});
 
         expect(getSpy.callCount).to.equal(1);
         expect(setSpy.callCount).to.equal(2);
@@ -215,7 +215,9 @@ describe('voodoo', () => {
             const a = foo;
             foo = bar;
             delete foo;
-        `, {
+        `);
+        
+        exec({foo: 1, bar: 2}, {
             get(...args) {
                 getSpy(...args);
             },
@@ -226,8 +228,6 @@ describe('voodoo', () => {
                 deleteSpy(...args);
             }
         });
-        
-        exec({foo: 1, bar: 2});
 
         expect(getSpy.callCount).to.equal(2);
         expect(getSpy.args[0][0]).to.equal('foo');
@@ -245,7 +245,17 @@ describe('voodoo', () => {
         expect(deleteSpy.args[0][0]).to.equal('foo');
         expect(deleteSpy.args[0][1]).to.equal(2);
 
-        exec({foo: 'a', bar: 'b'});
+        exec({foo: 'a', bar: 'b'}, {
+            get(...args) {
+                getSpy(...args);
+            },
+            set(...args) {
+                setSpy(...args);
+            },
+            delete(...args) {
+                deleteSpy(...args);
+            }
+        });
 
         expect(getSpy.callCount).to.equal(4);
         expect(getSpy.args[2][0]).to.equal('foo');
@@ -275,7 +285,9 @@ describe('voodoo', () => {
                 foo = 'baz';
                 delete foo;
             }, 100);
-        `, {
+        `);
+        
+        const data = exec({foo: 'bar'}, {
             get(...args) {
                 getSpy(...args);
             },
@@ -286,8 +298,6 @@ describe('voodoo', () => {
                 deleteSpy(...args);
             }
         });
-        
-        const data = exec({foo: 'bar'});
 
         setTimeout(() => {
             expect(getSpy.callCount).to.equal(1);
@@ -336,14 +346,14 @@ describe('voodoo', () => {
             setTimeout(() => {
                 foo = 2;
             }, 100);
-        `, {
+        `);
+        
+        data = exec({foo: 1}, {
             set(...args) {
                 expect(data.foo).to.equal(2);
                 spy(...args);
             }
         });
-        
-        data = exec({foo: 1});
 
         setTimeout(() => {
             expect(spy.callCount).to.equal(1);
@@ -359,14 +369,14 @@ describe('voodoo', () => {
             setTimeout(() => {
                 delete foo;
             }, 100);
-        `, {
+        `);
+        
+        data = exec({foo: 1}, {
             delete(...args) {
                 expect(data).to.not.have.property('foo');
                 spy(...args);
             }
         });
-        
-        data = exec({foo: 1});
 
         setTimeout(() => {
             expect(spy.callCount).to.equal(1);
@@ -382,11 +392,7 @@ describe('voodoo', () => {
             } catch (e) {
                 global._val = e;
             }
-        `, {
-            delete(...args) {
-                spy(...args);
-            }
-        });
+        `);
 
         const obj = {};
         Object.defineProperty(obj, 'foo', {
@@ -394,7 +400,11 @@ describe('voodoo', () => {
             configurable: false
         })
         
-        exec(obj);
+        exec(obj, {
+            delete(...args) {
+                spy(...args);
+            }
+        });
         
         expect(spy.callCount).to.equal(0);
         expect(global._val).to.be.an.instanceof(TypeError);
@@ -411,11 +421,7 @@ describe('voodoo', () => {
             } catch (e) {
                 global._val = e;
             }
-        `, {
-            get(...args) {
-                spy(...args);
-            }
-        });
+        `);
 
         const obj = {foo: 1, bar: 2};
         obj[Symbol.unscopables] = {
@@ -423,7 +429,11 @@ describe('voodoo', () => {
             bar: true
         };
         
-        exec(obj);
+        exec(obj, {
+            get(...args) {
+                spy(...args);
+            }
+        });
 
         expect(spy.callCount).to.equal(1);
         expect(spy.args[0][0]).to.equal('foo');

@@ -1,42 +1,42 @@
-export default function voodoo(source, traps) {
-    const fn = new Function('__data__', `
+export default function voodoo(source) {
+    const exec = new Function('__data__', `
         with (__data__) {
             ${source}
         }
     `);
-    const handler = {};
-    if (traps) {
-        if (traps.get) {
-            handler.get = (obj, prop) => {
-                const value = obj[prop];
-                if (prop !== Symbol.unscopables) {
-                    traps.get(prop, value);
-                }
-                return value;
+    return (data, traps) => {
+        const handler = {};
+        if (traps) {
+            if (traps.get) {
+                handler.get = (obj, prop) => {
+                    const value = obj[prop];
+                    if (prop !== Symbol.unscopables) {
+                        traps.get(prop, value);
+                    }
+                    return value;
+                };
+            }
+            if (traps.set) {
+                handler.set = (obj, prop, nextVal) => {
+                    const prevVal = obj[prop];
+                    obj[prop] = nextVal;
+                    traps.set(prop, nextVal, prevVal);
+                    return true;
+                };
+            }
+            if (traps.delete) {
+                handler.deleteProperty = (obj, prop) => {
+                    const value = obj[prop];
+                    const isDeleted = delete obj[prop];
+                    if (isDeleted) {
+                        traps.delete(prop, value);
+                    }
+                    return isDeleted;
+                };
             }
         }
-        if (traps.set) {
-            handler.set = (obj, prop, nextVal) => {
-                const prevVal = obj[prop];
-                obj[prop] = nextVal;
-                traps.set(prop, nextVal, prevVal);
-                return true;
-            }
-        }
-        if (traps.delete) {
-            handler.deleteProperty = (obj, prop) => {
-                const value = obj[prop];
-                const isDeleted = delete obj[prop];
-                if (isDeleted) {
-                    traps.delete(prop, value);
-                }
-                return isDeleted;
-            }
-        }
-    }
-    return (data) => {
         const proxy = new Proxy(data, handler);
-        fn.call(proxy, proxy);
+        exec.call(proxy, proxy);
         return proxy;
     }
 }
