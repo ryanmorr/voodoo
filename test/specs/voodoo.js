@@ -30,7 +30,7 @@ describe('voodoo', () => {
 
         const data = exec({foo: 1, bar: 2});
         
-        expect(data).to.deep.equal({foo: 1, bar: 2})
+        expect(data).to.deep.equal({foo: 1, bar: 2});
     });
 
     it('should get the value of a variable', () => {
@@ -398,7 +398,7 @@ describe('voodoo', () => {
         Object.defineProperty(obj, 'foo', {
             value: 1,
             configurable: false
-        })
+        });
         
         exec(obj, {
             delete(...args) {

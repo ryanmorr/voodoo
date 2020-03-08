@@ -38,5 +38,5 @@ export default function voodoo(source) {
         const proxy = new Proxy(data, handler);
         exec.call(proxy, proxy);
         return proxy;
-    }
+    };
 }
