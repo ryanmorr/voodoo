@@ -1,6 +1,6 @@
 export default function voodoo(source) {
-    const exec = new Function('__data__', `
-        with (__data__) {
+    const exec = new Function(`
+        with (this) {
             ${source}
         }
     `);
@@ -36,7 +36,7 @@ export default function voodoo(source) {
             }
         }
         const proxy = new Proxy(data, handler);
-        exec.call(proxy, proxy);
+        exec.call(proxy);
         return proxy;
     };
 }
