@@ -1,4 +1,10 @@
+function getFunctionBody(fn) {
+    const source = fn.toString();
+    return source.substring(source.indexOf('{') + 1, source.lastIndexOf('}'));
+}
+
 export default function voodoo(source) {
+    source = typeof source === 'string' ? source : getFunctionBody(source);
     const exec = new Function(`
         with (this) {
             ${source}

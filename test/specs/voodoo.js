@@ -373,4 +373,35 @@ describe('voodoo', () => {
         expect(global._val).to.be.an.instanceof(ReferenceError);
         expect(global._val.message).to.equal('bar is not defined');
     });
+
+    it('should support a function as the source', (done) => {
+        const getSpy = sinon.spy();
+        const setSpy = sinon.spy();
+    
+        const exec = voodoo((foo, bar) => {
+            setTimeout(() => {
+                bar = foo + bar;
+            }, 100);
+        });
+        
+        exec({foo: 1, bar: 2}, {
+            get: getSpy,
+            set: setSpy
+        });
+    
+        setTimeout(() => {
+            expect(getSpy.callCount).to.equal(2);
+            expect(getSpy.args[0][0]).to.equal('foo');
+            expect(getSpy.args[0][1]).to.equal(1);
+            expect(getSpy.args[1][0]).to.equal('bar');
+            expect(getSpy.args[1][1]).to.equal(2);
+    
+            expect(setSpy.callCount).to.equal(1);
+            expect(setSpy.args[0][0]).to.equal('bar');
+            expect(setSpy.args[0][1]).to.equal(3);
+            expect(setSpy.args[0][2]).to.equal(2);
+    
+            done();
+        }, 200);
+    });
 });
