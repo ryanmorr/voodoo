@@ -10,7 +10,7 @@ export default function voodoo(source) {
             ${source}
         }
     `);
-    return (data, traps) => {
+    return (state, traps) => {
         const handler = {
             deleteProperty: (obj, prop) => {
                 const prevVal = obj[prop];
@@ -40,7 +40,7 @@ export default function voodoo(source) {
                 };
             }
         }
-        const proxy = new Proxy(data, handler);
+        const proxy = new Proxy(state, handler);
         exec.call(proxy);
         return proxy;
     };
