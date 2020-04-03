@@ -69,20 +69,6 @@ describe('voodoo', () => {
         expect(global._val).to.equal(undefined);
     });
 
-    it('should call a variable function', () => {
-        const spy = sinon.spy();
-
-        const exec = voodoo(`
-            foo(bar);
-        `);
-        
-        exec({foo: spy, bar: 'baz'});
-
-        expect(spy.callCount).to.equal(1);
-        expect(spy.args[0].length).to.equal(1);
-        expect(spy.args[0][0]).to.equal('baz');
-    });
-
     it('should notify observers when accessing the value of a variable', () => {
         const spy = sinon.spy();
 
@@ -93,9 +79,7 @@ describe('voodoo', () => {
         `);
         
         exec({foo: 'bar', baz: 'qux'}, {
-            get(...args) {
-                spy(...args);
-            }
+            get: spy
         });
 
         expect(spy.callCount).to.equal(3);
@@ -122,9 +106,7 @@ describe('voodoo', () => {
         `);
         
         exec({foo: 1, bar: 10}, {
-            set(...args) {
-                spy(...args);
-            }
+            set: spy
         });
 
         expect(spy.callCount).to.equal(2);
@@ -149,9 +131,7 @@ describe('voodoo', () => {
         `);
         
         exec({foo: 1, bar: 2}, {
-            delete(...args) {
-                spy(...args);
-            }
+            delete: spy
         });
 
         expect(spy.callCount).to.equal(2);
@@ -165,7 +145,7 @@ describe('voodoo', () => {
         expect(spy.args[1][1]).to.equal(2);
     });
 
-    it('should notify observers in order when accessing, setting, and deleting a variable', () => {
+    it('should notify observers in order when accessing, reassigning, and deleting a variable', () => {
         const getSpy = sinon.spy();
         const setSpy = sinon.spy();
         const deleteSpy = sinon.spy();
@@ -179,15 +159,9 @@ describe('voodoo', () => {
         `);
         
         exec({foo: 'bar'}, {
-            get(...args) {
-                getSpy(...args);
-            },
-            set(...args) {
-                setSpy(...args);
-            },
-            delete(...args) {
-                deleteSpy(...args);
-            }
+            get: getSpy,
+            set: setSpy,
+            delete: deleteSpy
         });
 
         expect(getSpy.callCount).to.equal(1);
@@ -218,15 +192,9 @@ describe('voodoo', () => {
         `);
         
         exec({foo: 1, bar: 2}, {
-            get(...args) {
-                getSpy(...args);
-            },
-            set(...args) {
-                setSpy(...args);
-            },
-            delete(...args) {
-                deleteSpy(...args);
-            }
+            get: getSpy,
+            set: setSpy,
+            delete: deleteSpy
         });
 
         expect(getSpy.callCount).to.equal(2);
@@ -246,15 +214,9 @@ describe('voodoo', () => {
         expect(deleteSpy.args[0][1]).to.equal(2);
 
         exec({foo: 'a', bar: 'b'}, {
-            get(...args) {
-                getSpy(...args);
-            },
-            set(...args) {
-                setSpy(...args);
-            },
-            delete(...args) {
-                deleteSpy(...args);
-            }
+            get: getSpy,
+            set: setSpy,
+            delete: deleteSpy
         });
 
         expect(getSpy.callCount).to.equal(4);
@@ -288,15 +250,9 @@ describe('voodoo', () => {
         `);
         
         const data = exec({foo: 'bar'}, {
-            get(...args) {
-                getSpy(...args);
-            },
-            set(...args) {
-                setSpy(...args);
-            },
-            delete(...args) {
-                deleteSpy(...args);
-            }
+            get: getSpy,
+            set: setSpy,
+            delete: deleteSpy
         });
 
         setTimeout(() => {
@@ -319,12 +275,13 @@ describe('voodoo', () => {
         }, 200);
     });
 
-    it('should keep the returned data object up-to-date with the current variables values', (done) => {
+    it('should keep the property values of the returned data object in sync with the value of the variables', (done) => {
         const exec = voodoo(`
             setTimeout(() => {
                 foo = 3;
                 bar = 5;
                 delete baz;
+                global._val = qux;
             }, 100);
         `);
         
@@ -332,8 +289,12 @@ describe('voodoo', () => {
 
         expect(data).to.deep.equal({foo: 1, bar: 2, baz: 3});
 
+        data.qux = 10;
+
         setTimeout(() => {
-            expect(data).to.deep.equal({foo: 3, bar: 5, baz: undefined});
+            expect(data).to.deep.equal({foo: 3, bar: 5, baz: undefined, qux: 10});
+            expect(global._val).to.deep.equal(10);
+
             done();
         }, 200);
     });
@@ -403,9 +364,7 @@ describe('voodoo', () => {
         };
         
         exec(obj, {
-            get(...args) {
-                spy(...args);
-            }
+            get: spy
         });
 
         expect(spy.callCount).to.equal(1);
