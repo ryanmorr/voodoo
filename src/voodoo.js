@@ -5,7 +5,16 @@ export default function voodoo(source) {
         }
     `);
     return (data, traps) => {
-        const handler = {};
+        const handler = {
+            deleteProperty: (obj, prop) => {
+                const prevVal = obj[prop];
+                obj[prop] = undefined;
+                if (traps && traps.delete) {
+                    traps.delete(prop, prevVal);
+                }
+                return true;
+            }
+        };
         if (traps) {
             if (traps.get) {
                 handler.get = (obj, prop) => {
@@ -22,16 +31,6 @@ export default function voodoo(source) {
                     obj[prop] = nextVal;
                     traps.set(prop, nextVal, prevVal);
                     return true;
-                };
-            }
-            if (traps.delete) {
-                handler.deleteProperty = (obj, prop) => {
-                    const value = obj[prop];
-                    const isDeleted = delete obj[prop];
-                    if (isDeleted) {
-                        traps.delete(prop, value);
-                    }
-                    return isDeleted;
                 };
             }
         }

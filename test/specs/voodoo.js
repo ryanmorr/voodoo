@@ -57,18 +57,16 @@ describe('voodoo', () => {
     it('should delete a variable', () => {
         const exec = voodoo(`
             if (delete foo) {
-                try {
-                    global._val = foo;
-                } catch (e) {
-                    global._val = e;
-                } 
+                global._val = foo;
+            } else {
+                global._val = 'failed';
             }
         `);
 
         const data = exec({foo: 1});
-        expect(data).to.not.have.property('foo');
-        expect(global._val).to.be.an.instanceof(ReferenceError);
-        expect(global._val.message).to.equal('foo is not defined');
+        expect(data).to.have.property('foo');
+        expect(data.foo).to.equal(undefined)
+        expect(global._val).to.equal(undefined);
     });
 
     it('should call a variable function', () => {
@@ -193,17 +191,19 @@ describe('voodoo', () => {
         });
 
         expect(getSpy.callCount).to.equal(1);
-        expect(setSpy.callCount).to.equal(2);
+        expect(setSpy.callCount).to.equal(3);
         expect(deleteSpy.callCount).to.equal(1);
 
-        const getCall = getSpy.getCall(0);
+        const getCall1 = getSpy.getCall(0);
         const setCall1 = setSpy.getCall(0);
         const setCall2 = setSpy.getCall(1);
+        const setCall3 = setSpy.getCall(2);
         const deleteCall = deleteSpy.getCall(0);
 
-        expect(getCall.calledBefore(setCall1)).to.equal(true);
+        expect(getCall1.calledBefore(setCall1)).to.equal(true);
         expect(setCall1.calledBefore(setCall2)).to.equal(true);
         expect(setCall2.calledBefore(deleteCall)).to.equal(true);
+        expect(deleteCall.calledBefore(setCall3)).to.equal(true);
     });
 
     it('should support multiple calls', () => {
@@ -313,7 +313,7 @@ describe('voodoo', () => {
             expect(deleteSpy.args[0][0]).to.equal('foo');
             expect(deleteSpy.args[0][1]).to.equal('baz');
 
-            expect(data).to.deep.equal({});
+            expect(data).to.deep.equal({foo: undefined});
 
             done();
         }, 200);
@@ -333,7 +333,7 @@ describe('voodoo', () => {
         expect(data).to.deep.equal({foo: 1, bar: 2, baz: 3});
 
         setTimeout(() => {
-            expect(data).to.deep.equal({foo: 3, bar: 5});
+            expect(data).to.deep.equal({foo: 3, bar: 5, baz: undefined});
             done();
         }, 200);
     });
@@ -373,7 +373,7 @@ describe('voodoo', () => {
         
         data = exec({foo: 1}, {
             delete(...args) {
-                expect(data).to.not.have.property('foo');
+                expect(data.foo).to.equal(undefined);
                 spy(...args);
             }
         });
@@ -382,33 +382,6 @@ describe('voodoo', () => {
             expect(spy.callCount).to.equal(1);
             done();
         }, 200);
-    });
-
-    it('should not call the delete observers if the variable could not be deleted', () => {
-        const spy = sinon.spy();
-        const exec = voodoo(`
-            try {
-                delete foo;
-            } catch (e) {
-                global._val = e;
-            }
-        `);
-
-        const obj = {};
-        Object.defineProperty(obj, 'foo', {
-            value: 1,
-            configurable: false
-        });
-        
-        exec(obj, {
-            delete(...args) {
-                spy(...args);
-            }
-        });
-        
-        expect(spy.callCount).to.equal(0);
-        expect(global._val).to.be.an.instanceof(TypeError);
-        expect(global._val.message).to.equal('Cannot delete property \'foo\' of #<Object>');
     });
 
     it('should respect unscopables', () => {
