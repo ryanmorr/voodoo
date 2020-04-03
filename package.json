@@ -1,6 +1,6 @@
 {
   "name": "@ryanmorr/voodoo",
-  "description": "A proof of concept to mimic the reactivity of Svelte",
+  "description": "An experimental reactive execution context inspired by Svelte",
   "version": "0.1.0",
   "license": "Unlicense",
   "author": "Ryan Morr",
