@@ -65,7 +65,7 @@ describe('voodoo', () => {
 
         const data = exec({foo: 1});
         expect(data).to.have.property('foo');
-        expect(data.foo).to.equal(undefined)
+        expect(data.foo).to.equal(undefined);
         expect(global._val).to.equal(undefined);
     });
 
