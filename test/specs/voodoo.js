@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import voodoo from '../../src/voodoo';
+import voodoo from '../../src/voodoo.js';
 
 describe('voodoo', () => {
     afterEach(() => {
