@@ -1,7 +1,7 @@
 {
   "name": "@ryanmorr/voodoo",
   "description": "An experimental reactive execution context inspired by Svelte",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "Unlicense",
   "author": "Ryan Morr",
   "homepage": "https://github.com/ryanmorr/voodoo",
